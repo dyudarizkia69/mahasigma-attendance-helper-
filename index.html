@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mahasigma Attendance Helper</title>
+    
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css">
+
+    <style>
+        :root{--font-header:'Poppins',sans-serif;--font-body:'Inter',sans-serif;--color-primary:#4A90E2;--color-primary-dark:#357ABD;--color-secondary:#50E3C2;--color-background:#F7F9FC;--color-surface:#FFFFFF;--color-text-primary:#333D49;--color-text-secondary:#8A94A6;--color-border:#E4E7EB;--color-warning:#ffc107;--shadow-soft:0 4px 6px rgba(0,0,0,.05);--shadow-lifted:0 10px 20px rgba(0,0,0,.1);--border-radius:12px}
+        body{font-family:var(--font-body);background-color:var(--color-background);color:var(--color-text-primary);margin:0;padding:20px;line-height:1.6}
+        .container{max-width:95%;margin:0 auto}
+        h1,h2,h3{font-family:var(--font-header);color:var(--color-primary);text-align:center;margin-bottom:.5em}
+        h1{font-size:2.2rem}
+        .subtitle{text-align:center;margin-top:-1em;margin-bottom:2em;color:var(--color-text-secondary)}
+        h2{font-size:1.75rem;color:var(--color-text-primary)}
+        h3{font-size:1.25rem;color:var(--color-text-primary);text-align:left;border-bottom:2px solid var(--color-secondary);padding-bottom:10px;margin-top:2rem}
+        .card{background-color:var(--color-surface);border-radius:var(--border-radius);padding:30px;margin-bottom:25px;box-shadow:var(--shadow-soft);border:1px solid var(--color-border);transition:all .3s ease}
+        .visitor-mode .card:hover{transform:none;box-shadow:var(--shadow-soft)}
+        body:not(.visitor-mode) .card:hover{transform:translateY(-4px);box-shadow:var(--shadow-lifted)}
+        .hidden{display:none}
+        input,textarea,select{width:100%;padding:12px 15px;margin-bottom:15px;border-radius:8px;border:1px solid var(--color-border);box-sizing:border-box;font-family:var(--font-body);font-size:1rem;transition:border-color .3s ease,box-shadow .3s ease}
+        input:focus,textarea:focus,select:focus{outline:none;border-color:var(--color-primary);box-shadow:0 0 0 3px rgba(74,144,226,.2)}
+        textarea{height:120px;resize:vertical}
+        button{background-color:var(--color-primary);color:#fff;padding:12px 25px;border:none;border-radius:8px;cursor:pointer;font-size:1rem;font-weight:700;font-family:var(--font-body);width:100%;transition:all .3s ease;box-shadow:var(--shadow-soft);display:flex;align-items:center;justify-content:center;gap:10px;box-sizing:border-box}
+        button:hover{background-color:var(--color-primary-dark);transform:translateY(-2px);box-shadow:0 6px 12px rgba(0,0,0,.1)}
+        .secondary-btn{background-color:#B0B8C7;width:auto}.secondary-btn:hover{background-color:#8A94A6}
+        .view{display:none}.view.active{display:block}
+        #class-list{margin-top:20px}
+        .class-item{display:flex;justify-content:space-between;align-items:center;padding:15px 20px;border:1px solid var(--color-border);border-radius:10px;margin-bottom:10px;transition:all .2s ease}
+        body:not(.visitor-mode) .class-item:hover{border-left:5px solid var(--color-secondary);background-color:#fdfdff}
+        .class-item-name-wrapper{flex-grow:1;cursor:pointer;padding:5px}
+        .class-item-name{font-weight:500;font-size:1.1rem;color:var(--color-text-primary)}
+        .class-lecturer{font-size:0.85rem;color:var(--color-text-secondary);margin:4px 0 0 0;}
+        .class-item-actions{display:flex;align-items:center;}
+        .class-item-actions button{background-color:transparent;color:var(--color-text-secondary);border:none;font-weight:700;font-size:1rem;cursor:pointer;padding:10px;width:auto;box-shadow:none}
+        .class-item-actions button:hover{background-color:#f0f2f5;transform:translateY(0);box-shadow:none}
+        .delete-class-btn:hover{color:#dc3545}
+        .edit-class-btn:hover, .lecturer-info-btn:hover{color:var(--color-primary)}
+        .page-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+        .controls{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;flex-wrap:wrap;gap:20px}
+        .controls-left{display:flex;align-items:center;gap:15px;flex-wrap:wrap}
+        .controls-left button{width:auto;font-size:.9rem}
+        .controls-left select{width:auto}
+        .note{font-size:.9rem;color:var(--color-text-secondary);text-align:center;margin-bottom: 1rem;}
+        hr{border:0;border-top:1px solid var(--color-border);margin:30px 0}
+        #restore-label{display:block;background-color:var(--color-warning);color:#333;padding:12px 25px;border-radius:8px;cursor:pointer;font-size:1rem;font-weight:700;font-family:var(--font-body);width:100%;transition:all .3s ease;box-shadow:var(--shadow-soft);text-align:center;margin-top:15px;box-sizing:border-box}
+        #restore-label:hover{background-color:#e9b30c;transform:translateY(-2px);box-shadow:0 6px 12px rgba(0,0,0,.1)}
+        #restore-input{display:none}
+        .search-container{display:flex;align-items:center;border:1px solid var(--color-border);border-radius:8px;padding:0 15px;margin-bottom:20px;background-color:var(--color-surface)}
+        .search-container i{color:var(--color-text-secondary)}
+        #search-input{border:none;outline:none;width:100%;margin-bottom:0;padding:12px 10px;box-shadow:none}
+        .modal-overlay{position:fixed;top:0;left:0;width:100%;height:100%;background-color:rgba(0,0,0,.5);z-index:100;display:flex;align-items:center;justify-content:center}
+        .modal-overlay.hidden{display:none}
+        .modal-content{background:var(--color-surface);padding:30px;border-radius:var(--border-radius);box-shadow:var(--shadow-lifted);width:90%;max-width:500px}
+        .modal-body .form-group{margin-bottom:15px}
+        .modal-body label{display:block;margin-bottom:5px;font-weight:500;color:var(--color-text-secondary)}
+        .modal-body input{margin-bottom:0}
+        .modal-actions{display:flex;gap:10px;margin-top:20px}
+        #report-type-modal-content .modal-actions {flex-direction: column; gap: 15px;}
+        #report-type-modal-content button {width: 100%; justify-content: flex-start;}
+        #attendance-cards-container { margin-top: 20px; }
+        .student-card { background-color: var(--color-surface); border-radius: var(--border-radius); padding: 20px; margin-bottom: 15px; box-shadow: var(--shadow-soft); border-left: 5px solid transparent; transition: all 0.3s ease; }
+        .student-card-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .student-info h4 { margin: 0; font-family: var(--font-header); font-size: 1.1rem; color: var(--color-text-primary); }
+        .student-info p { margin: 0; font-size: 0.9rem; color: var(--color-text-secondary); }
+        .student-actions .edit-student-btn { padding: 8px 12px; font-size: 0.9rem; }
+        .attendance-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(40px, 1fr)); gap: 10px; }
+        .attendance-dot { width: 100%; aspect-ratio: 1 / 1; border-radius: 8px; display: flex; align-items: center; justify-content: center; font-size: 0.8rem; font-weight: 700; color: white; cursor: pointer; border: 2px solid transparent; transition: transform 0.2s ease; }
+        .visitor-mode .attendance-dot:hover { transform: none; }
+        .visitor-mode .attendance-dot { cursor: default; }
+        .attendance-dot.active-week { border-color: var(--color-primary); }
+        .attendance-dot.status-H { background-color: #28a745; }
+        .attendance-dot.status-I { background-color: #17a2b8; }
+        .attendance-dot.status-S { background-color: #ffc107; color: #333; }
+        .attendance-dot.status-A { background-color: #dc3545; }
+        .attendance-dot.status-null { background-color: #e2e6ea; color: #5a6268; }
+        .attendance-dot.holiday { background-color: #f8f9fa; color: var(--color-text-secondary); font-size: 0.7rem; cursor: default;}
+        #smart-dashboard .card-content{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:20px;text-align:center}
+        #smart-dashboard .dashboard-item{padding:15px;border-radius:var(--border-radius);background-color:#F7F9FC}
+        #smart-dashboard h4{margin:0 0 8px 0;font-size:0.9rem;color:var(--color-text-secondary);font-weight:500}
+        #smart-dashboard p{margin:0;font-size:1.5rem;font-weight:700;color:var(--color-primary)}
+        #smart-dashboard .reminder{background-color:rgba(255,193,7,0.1);border:1px solid rgba(255,193,7,0.3)}
+        #smart-dashboard .reminder h4{color:var(--color-text-primary)}
+        #smart-dashboard .reminder p{font-size:1rem;font-weight:500;color:#856404;line-height:1.4}
+
+        /* +++ CSS UNTUK MENYEMBUNYIKAN ELEMEN DI MODE VISITOR +++ */
+        .visitor-mode .admin-only { display: none !important; }
+    </style>
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+</head>
+<body>
+    <div id="class-selection-view" class="view active">
+        <div class="container" style="max-width: 800px;">
+            <h1><i class="fas fa-check-double" style="color: var(--color-secondary);"></i> Mahasigma Attendance Helper</h1>
+            <p class="subtitle">created by: Dilah Yuda Rizkia</p>
+            <div class="card">
+                <h2>Pilih & Kelola Kelas</h2>
+                <div id="class-list"></div>
+                <div id="no-class-message" class="hidden"><p>Belum ada kelas.</p></div>
+            </div>
+            <div class="card admin-only">
+                <h2>Buat Kelas Baru</h2>
+                <input type="text" id="new-class-name" placeholder="Contoh: Dasar Pemrograman TI-2A">
+                <button id="add-class-btn"><i class="fas fa-plus-circle"></i>Buat Kelas</button>
+            </div>
+            <div class="card admin-only">
+                <h2><i class="fas fa-cogs"></i> Pengaturan Data</h2>
+                <p class="note">Simpan semua data Anda ke sebuah file, atau pulihkan dari file cadangan.</p>
+                <button id="backup-btn" class="secondary-btn"><i class="fas fa-download"></i> Cadangkan Semua Data</button>
+                <input type="file" id="restore-input" accept=".json">
+                <label for="restore-input" id="restore-label"><i class="fas fa-upload"></i> Pulihkan Data dari File</label>
+            </div>
+        </div>
+    </div>
+
+    <div id="attendance-view" class="view">
+        <div class="container">
+            <div class="page-header">
+                <button id="back-to-classes-btn" class="secondary-btn"><i class="fas fa-arrow-left"></i> Kembali</button>
+                <button id="share-class-btn" class="secondary-btn admin-only"><i class="fas fa-share-alt"></i> Bagikan Link</button>
+            </div>
+            <h1 id="attendance-class-name"></h1>
+            <p id="attendance-lecturer-name" class="class-lecturer" style="text-align: center; margin-top: -1em; margin-bottom: 2em;"></p>
+            
+            <div id="smart-dashboard" class="card admin-only" style="padding: 20px; display: none;">
+                <div class="card-content">
+                    <div class="dashboard-item">
+                        <h4>Total Mahasiswa</h4>
+                        <p id="db-student-count">0</p>
+                    </div>
+                    <div class="dashboard-item">
+                        <h4>Pertemuan Terakhir Diisi</h4>
+                        <p id="db-last-meeting">-</p>
+                    </div>
+                    <div class="dashboard-item reminder">
+                        <h4><i class="fas fa-bell"></i> Pengingat</h4>
+                        <p id="db-reminder">Tidak ada pengingat.</p>
+                    </div>
+                </div>
+            </div>
+
+            <div id="student-management-section"></div>
+            <div id="main-attendance-section" class="hidden">
+                 <div class="card">
+                    <div class="controls admin-only">
+                        <div class="controls-left">
+                            <label for="week-selector">Aksi Cepat Pertemuan:</label>
+                            <select id="week-selector"></select>
+                            <button id="mark-all-present-btn" class="secondary-btn" style="background-color:#28a745;">Tandai Hadir</button>
+                            <button id="mark-as-holiday-btn" class="secondary-btn">Tandai Libur</button>
+                            <button id="reset-attendance-btn" class="secondary-btn" style="background-color:#ffc107; color: #333;"><i class="fas fa-undo"></i> Reset</button>
+                        </div>
+                        <div><button id="edit-list-btn" class="secondary-btn" title="Hapus semua mahasiswa"><i class="fas fa-users-slash"></i> Hapus Daftar</button></div>
+                    </div>
+                    <div class="search-container">
+                        <i class="fas fa-search"></i>
+                        <input type="search" id="search-input" placeholder="Cari berdasarkan NIM atau Nama...">
+                    </div>
+                    <div id="attendance-cards-container"></div>
+                </div>
+                <div id="export-section" class="card admin-only">
+                    <h2>Ekspor</h2>
+                    <button id="export-excel"><i class="fas fa-file-excel"></i> Unduh Rekap Excel</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="edit-modal-overlay" class="modal-overlay hidden">
+        <div class="modal-content">
+            <h2 id="modal-title"></h2>
+            <div id="modal-body"></div>
+            <div class="modal-actions">
+                <button id="modal-cancel-btn" class="secondary-btn">Batal</button>
+                <button id="modal-save-btn">Simpan</button>
+            </div>
+        </div>
+    </div>
+    
+    <div id="report-type-modal-overlay" class="modal-overlay hidden">
+        <div id="report-type-modal-content" class="modal-content">
+            <h2>Pilih Jenis Laporan</h2>
+            <div class="modal-actions">
+                <button data-report-type="full"><i class="fas fa-file-alt fa-fw"></i> Rekap Penuh (P1-16)</button>
+                <button data-report-type="pre-uts"><i class="fas fa-file-alt fa-fw"></i> Rekap Sebelum UTS (P1-7)</button>
+                <button data-report-type="post-uts"><i class="fas fa-file-alt fa-fw"></i> Rekap Setelah UTS (P8-16)</button>
+                <hr>
+                <button data-report-type="alpha-gt3" style="background-color: #dc3545;"><i class="fas fa-user-times fa-fw"></i> Daftar Mahasiswa Alpha > 3 Kali</button>
+                <button data-report-type="no-alpha" style="background-color: #28a745;"><i class="fas fa-user-check fa-fw"></i> Daftar Mahasiswa Tanpa Alpha</button>
+                <hr>
+                <button id="report-type-cancel-btn" class="secondary-btn">Batal</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            const urlParams = new URLSearchParams(window.location.search);
+            const isVisitorMode = urlParams.get('view') === 'visitor';
+
+            if (isVisitorMode) {
+                document.body.classList.add('visitor-mode');
+            }
+
+            let appData = { classes: [] };
+            let activeClassIndex = -1;
+            const attendanceCycle = ['H', 'I', 'S', 'A', null];
+            
+            const saveData = () => localStorage.setItem('classAttendancePro', JSON.stringify(appData));
+            const loadData = () => {
+                const data = localStorage.getItem('classAttendancePro');
+                if (data) appData = JSON.parse(data);
+            };
+            const switchView = (viewId) => {
+                document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+                document.getElementById(viewId).classList.add('active');
+            };
+
+            const openModal = (title, contentHtml, saveCallback, saveButtonText = 'Simpan') => {
+                const modalOverlay = document.getElementById('edit-modal-overlay');
+                const modalTitle = document.getElementById('modal-title');
+                const modalBody = document.getElementById('modal-body');
+                const oldSaveBtn = document.getElementById('modal-save-btn');
+                
+                modalTitle.textContent = title;
+                modalBody.innerHTML = contentHtml;
+                
+                const newSaveBtn = oldSaveBtn.cloneNode(true);
+                newSaveBtn.innerHTML = saveButtonText;
+                oldSaveBtn.parentNode.replaceChild(newSaveBtn, oldSaveBtn);
+                newSaveBtn.addEventListener('click', saveCallback);
+
+                modalOverlay.classList.remove('hidden');
+            };
+
+            const closeModal = () => {
+                document.getElementById('edit-modal-overlay').classList.add('hidden');
+                document.getElementById('modal-title').textContent = '';
+                document.getElementById('modal-body').innerHTML = '';
+            };
+
+            const renderClassList = () => {
+                const classListDiv = document.getElementById('class-list');
+                classListDiv.innerHTML = '';
+                document.getElementById('no-class-message').classList.toggle('hidden', appData.classes.length === 0);
+                appData.classes.forEach((classItem, index) => {
+                    const classDiv = document.createElement('div');
+                    classDiv.className = 'class-item';
+                    let lecturerInfo = (classItem.lecturer && classItem.lecturer.name) ? `<p class="class-lecturer"><i class="fas fa-user-tie fa-fw" style="opacity: 0.6;"></i> ${classItem.lecturer.name}</p>` : '';
+                    classDiv.innerHTML = `<div class="class-item-name-wrapper"><span class="class-item-name">${classItem.className}</span>${lecturerInfo}</div><div class="class-item-actions admin-only"><button class="lecturer-info-btn"><i class="fas fa-user-tie"></i></button><button class="edit-class-btn"><i class="fas fa-pencil-alt"></i></button><button class="delete-class-btn"><i class="fas fa-trash-alt"></i></button></div>`;
+                    
+                    classDiv.querySelector('.class-item-name-wrapper').addEventListener('click', () => selectClass(index));
+                    
+                    if (!isVisitorMode) {
+                        classDiv.querySelector('.lecturer-info-btn').addEventListener('click', (e) => { e.stopPropagation(); handleLecturerInfoUpdate(index); });
+                        classDiv.querySelector('.edit-class-btn').addEventListener('click', (e) => { e.stopPropagation(); handleEditClassName(index); });
+                        classDiv.querySelector('.delete-class-btn').addEventListener('click', (e) => { e.stopPropagation(); handleDeleteClass(index); });
+                    }
+
+                    classListDiv.appendChild(classDiv);
+                });
+            };
+            
+            const addNewClass = () => {
+                if (isVisitorMode) return;
+                const newClassNameInput = document.getElementById('new-class-name');
+                const className = newClassNameInput.value.trim();
+                if (className) {
+                    appData.classes.push({ className: className, lecturer: {}, students: [], attendance: {}, holidays: [] });
+                    newClassNameInput.value = ''; saveData(); renderClassList();
+                } else { alert('Nama kelas tidak boleh kosong!'); }
+            };
+            
+            const selectClass = (index) => {
+                activeClassIndex = index;
+                renderAttendancePage();
+                switchView('attendance-view');
+            };
+
+            const handleDeleteClass = (index) => {
+                if (isVisitorMode) return;
+                if (confirm(`Yakin ingin menghapus kelas "${appData.classes[index].className}"?`)) {
+                    appData.classes.splice(index, 1);
+                    saveData(); renderClassList();
+                }
+            };
+
+            const handleEditClassName = (index) => {
+                if (isVisitorMode) return;
+                const oldName = appData.classes[index].className;
+                const formHtml = `
+                    <div class="form-group">
+                        <label for="edit-class-name">Nama Kelas</label>
+                        <input type="text" id="edit-class-name" value="${oldName}" placeholder="Masukkan nama kelas baru">
+                    </div>`;
+
+                const saveFunction = () => {
+                    const newName = document.getElementById('edit-class-name').value.trim();
+                    if (newName) {
+                        appData.classes[index].className = newName;
+                        saveData();
+                        renderClassList();
+                        if (index === activeClassIndex) {
+                            renderAttendancePage();
+                        }
+                        closeModal();
+                    } else {
+                        alert('Nama kelas tidak boleh kosong!');
+                    }
+                };
+                
+                openModal('Edit Nama Kelas', formHtml, saveFunction);
+            };
+
+            const goBackToClassList = () => {
+                const searchInput = document.getElementById('search-input');
+                if (searchInput) searchInput.value = '';
+                activeClassIndex = -1;
+                // Hapus hash dari URL saat kembali
+                history.pushState("", document.title, window.location.pathname + window.location.search);
+                switchView('class-selection-view');
+            };
+            
+            const updateSmartDashboard = () => {
+                if (isVisitorMode || activeClassIndex < 0) return;
+                const activeClass = appData.classes[activeClassIndex];
+
+                const studentCount = activeClass.students.length;
+                document.getElementById('db-student-count').textContent = studentCount;
+
+                let lastFilledMeeting = 0;
+                for (let week = 16; week >= 1; week--) {
+                    const isAnyStudentFilled = activeClass.students.some(student => {
+                        return activeClass.attendance[student.id] && activeClass.attendance[student.id][week - 1] !== null;
+                    });
+                    if (isAnyStudentFilled) {
+                        lastFilledMeeting = week;
+                        break;
+                    }
+                }
+                document.getElementById('db-last-meeting').textContent = lastFilledMeeting > 0 ? lastFilledMeeting : '-';
+
+                let reminderText = "Semua absensi telah diisi. 👍";
+                if (lastFilledMeeting < 16) {
+                    for (let nextMeeting = lastFilledMeeting + 1; nextMeeting <= 16; nextMeeting++) {
+                        if (!activeClass.holidays.includes(nextMeeting)) {
+                            reminderText = `Anda belum mengisi absensi Pertemuan ${nextMeeting}.`;
+                            break;
+                        }
+                    }
+                }
+                document.getElementById('db-reminder').textContent = reminderText;
+            };
+
+            const renderAttendancePage = () => {
+                if (activeClassIndex < 0) return;
+                const activeClass = appData.classes[activeClassIndex];
+                const dashboard = document.getElementById('smart-dashboard');
+                
+                document.getElementById('attendance-class-name').textContent = activeClass.className;
+                const lecturerNameEl = document.getElementById('attendance-lecturer-name');
+                if (activeClass.lecturer && activeClass.lecturer.name) {
+                    lecturerNameEl.textContent = `Dosen: ${activeClass.lecturer.name}`;
+                    lecturerNameEl.classList.remove('hidden');
+                } else {
+                    lecturerNameEl.textContent = '';
+                    lecturerNameEl.classList.add('hidden');
+                }
+                const studentMgmtSection = document.getElementById('student-management-section');
+                const mainAttendanceSection = document.getElementById('main-attendance-section');
+
+                if (activeClass.students && activeClass.students.length > 0) {
+                    if (!isVisitorMode) dashboard.style.display = 'block';
+                    studentMgmtSection.classList.add('hidden');
+                    mainAttendanceSection.classList.remove('hidden');
+                    
+                    if (!isVisitorMode) {
+                        updateSmartDashboard();
+                        populateWeekSelector();
+                    }
+                    renderAttendanceCards();
+                } else {
+                    dashboard.style.display = 'none';
+                    studentMgmtSection.classList.remove('hidden');
+                    studentMgmtSection.innerHTML = `<div class="card admin-only"><h2><i class="fas fa-users-cog"></i> Tambah Mahasiswa</h2><p>Kelas ini belum memiliki mahasiswa.</p><hr><h3><i class="fas fa-user-plus"></i> Tambah Manual</h3><input type="text" id="manual-student-id" placeholder="NIM Mahasiswa"><input type="text" id="manual-student-name" placeholder="Nama Lengkap Mahasiswa"><button id="add-manual-btn" style="width: auto; padding: 10px 20px;">+ Tambah</button><hr><h3><i class="fas fa-paste"></i> Salin & Tempel</h3><textarea id="paste-students" placeholder="Tempel daftar di sini. Format: NIM,Nama"></textarea><button id="load-paste-btn">Proses Data</button><hr><h3><i class="fas fa-file-csv"></i> Unggah File .CSV</h3><input type="file" id="csv-file-input" accept=".csv"><p class="note">Format: Kolom A untuk NIM, Kolom B untuk Nama.</p></div>`;
+                    mainAttendanceSection.classList.add('hidden');
+                    
+                    if (!isVisitorMode) {
+                        document.getElementById('add-manual-btn').addEventListener('click', handleManualAdd);
+                        document.getElementById('load-paste-btn').addEventListener('click', handlePaste);
+                        document.getElementById('csv-file-input').addEventListener('change', handleFileUpload);
+                    }
+                }
+            };
+            
+            const addStudentsToClass = (newStudents) => {
+                if (isVisitorMode) return;
+                const activeClass = appData.classes[activeClassIndex];
+                let addedCount = 0, skippedCount = 0;
+                newStudents.forEach(newStudent => {
+                    const idExists = activeClass.students.some(s => s.id === newStudent.id);
+                    if (newStudent.id && !idExists) {
+                        activeClass.students.push(newStudent);
+                        activeClass.attendance[newStudent.id] = Array(16).fill(null);
+                        addedCount++;
+                    } else { skippedCount++; }
+                });
+                if (addedCount > 0) { saveData(); renderAttendancePage(); }
+                alert(`${addedCount} mahasiswa ditambahkan. ${skippedCount > 0 ? `${skippedCount} dilewati.` : ''}`);
+            };
+
+            const handleManualAdd = () => {
+                const id = document.getElementById('manual-student-id').value.trim();
+                const name = document.getElementById('manual-student-name').value.trim();
+                if(id && name) {
+                    addStudentsToClass([{id, name}]);
+                    document.getElementById('manual-student-id').value = '';
+                    document.getElementById('manual-student-name').value = '';
+                } else alert('NIM dan Nama harus diisi.');
+            };
+
+            const handlePaste = () => {
+                const data = document.getElementById('paste-students').value.trim();
+                if(!data) return alert('Kolom masih kosong.');
+                const students = data.split('\n').map(line => {
+                    const [id, ...nameParts] = line.split(/[,;\t]/);
+                    if(!id || !nameParts.length) return null;
+                    return { id: id.trim(), name: nameParts.join(' ').trim() };
+                }).filter(s => s);
+                if(students.length > 0) addStudentsToClass(students);
+                else alert('Format tidak sesuai atau tidak ada data valid.');
+            };
+
+            const handleFileUpload = (event) => {
+                const file = event.target.files[0];
+                if (file) {
+                    Papa.parse(file, {
+                        complete: (results) => {
+                            const students = results.data.map(row => ({ id: String(row[0] || '').trim(), name: String(row[1] || '').trim() })).filter(s => s.id && s.name);
+                            if(students.length > 0) addStudentsToClass(students);
+                            else alert('CSV kosong atau formatnya salah.');
+                        }
+                    });
+                }
+            };
+            
+            const resetStudentList = () => {
+                if (isVisitorMode) return;
+                if(confirm('Yakin ingin menghapus SEMUA mahasiswa dari kelas ini? Aksi ini akan menghapus semua data absensi juga.')) {
+                    const activeClass = appData.classes[activeClassIndex];
+                    activeClass.students = [];
+                    activeClass.attendance = {};
+                    saveData();
+                    renderAttendancePage();
+                }
+            };
+            
+            const populateWeekSelector = () => {
+                const weekSelector = document.getElementById('week-selector');
+                const previouslySelected = localStorage.getItem(`currentWeek_${activeClassIndex}`) || 1;
+                weekSelector.innerHTML = '';
+                for (let i = 1; i <= 16; i++) {
+                    const option = document.createElement('option');
+                    option.value = i;
+                    option.textContent = `Pertemuan ${i}`;
+                    weekSelector.appendChild(option);
+                }
+                weekSelector.value = previouslySelected;
+            };
+
+            const renderAttendanceCards = () => {
+                const cardsContainer = document.getElementById('attendance-cards-container');
+                const activeClass = appData.classes[activeClassIndex];
+                if(!activeClass) return;
+                const weekSelector = isVisitorMode ? {value: 1} : document.getElementById('week-selector');
+                const currentWeek = parseInt(weekSelector.value || 1);
+                cardsContainer.innerHTML = '';
+                const searchTerm = document.getElementById('search-input').value.toLowerCase().trim();
+                const filteredStudents = (searchTerm === '') ? activeClass.students : activeClass.students.filter(s => s.name.toLowerCase().includes(searchTerm) || s.id.toLowerCase().includes(searchTerm));
+
+                if (filteredStudents.length === 0 && activeClass.students.length > 0) {
+                     cardsContainer.innerHTML = `<p style="text-align:center; color: var(--color-text-secondary);">Tidak ada mahasiswa yang cocok dengan pencarian '${searchTerm}'.</p>`;
+                     return;
+                }
+
+                filteredStudents.forEach(student => {
+                    const card = document.createElement('div');
+                    card.className = 'student-card';
+                    let gridHTML = '';
+                    for (let week = 1; week <= 16; week++) {
+                        const status = (activeClass.attendance[student.id] || [])[week - 1];
+                        const isHoliday = activeClass.holidays.includes(week);
+                        let dotClass = 'attendance-dot'; let dotContent = `${week}`;
+                        if(isHoliday) { dotClass += ' holiday'; dotContent = 'L'; }
+                        else {
+                            dotClass += ` status-${status === null ? 'null' : status}`;
+                            if (status) dotContent = status;
+                        }
+                        if(week === currentWeek && !isVisitorMode) dotClass += ' active-week';
+                        gridHTML += `<div class="${dotClass}" data-student-id="${student.id}" data-week="${week}">${dotContent}</div>`;
+                    }
+                    card.innerHTML = `<div class="student-card-header"><div class="student-info"><h4>${student.name}</h4><p>${student.id}</p></div><div class="student-actions admin-only"><button class="edit-student-btn secondary-btn" data-id="${student.id}"><i class="fas fa-pencil-alt"></i></button></div></div><div class="attendance-grid">${gridHTML}</div>`;
+                    cardsContainer.appendChild(card);
+                });
+            };
+
+            const toggleAttendance = (studentId, week) => {
+                if (isVisitorMode) return; 
+                const activeClass = appData.classes[activeClassIndex];
+                if (activeClass.holidays.includes(week)) return; 
+                const attendanceRecord = activeClass.attendance[studentId] || Array(16).fill(null);
+                const currentStatus = attendanceRecord[week - 1];
+                const currentIndex = attendanceCycle.indexOf(currentStatus);
+                attendanceRecord[week - 1] = attendanceCycle[(currentIndex + 1) % attendanceCycle.length];
+                activeClass.attendance[studentId] = attendanceRecord;
+                saveData();
+                renderAttendanceCards();
+                updateSmartDashboard();
+            };
+
+            const handleEditStudent = (originalId) => {
+                if (isVisitorMode) return;
+                const activeClass = appData.classes[activeClassIndex];
+                const studentToUpdate = activeClass.students.find(s => s.id === originalId);
+                if (!studentToUpdate) return;
+                
+                const formHtml = `
+                    <div class="form-group">
+                        <label for="edit-student-id">NIM Mahasiswa</label>
+                        <input type="text" id="edit-student-id" value="${studentToUpdate.id}">
+                    </div>
+                    <div class="form-group">
+                        <label for="edit-student-name">Nama Mahasiswa</label>
+                        <input type="text" id="edit-student-name" value="${studentToUpdate.name}">
+                    </div>`;
+                
+                const saveFunction = () => {
+                    const newId = document.getElementById('edit-student-id').value.trim();
+                    const newName = document.getElementById('edit-student-name').value.trim();
+                    if (!newId || !newName) { alert('NIM dan Nama tidak boleh kosong.'); return; }
+                    const isDuplicate = activeClass.students.some(s => s.id === newId && s.id !== originalId);
+                    if (isDuplicate) { alert('NIM baru sudah digunakan oleh mahasiswa lain.'); return; }
+                    
+                    studentToUpdate.name = newName;
+                    if (originalId !== newId) {
+                        studentToUpdate.id = newId;
+                        activeClass.attendance[newId] = activeClass.attendance[originalId];
+                        delete activeClass.attendance[originalId];
+                    }
+                    saveData();
+                    renderAttendanceCards();
+                    closeModal();
+                };
+
+                openModal('Edit Mahasiswa', formHtml, saveFunction);
+            };
+            
+            const handleSearch = () => renderAttendanceCards();
+            
+            const handleLecturerInfoUpdate = (index) => {
+                if (isVisitorMode) return;
+                const currentLecturer = appData.classes[index].lecturer || {};
+                const formHtml = `
+                    <div class="form-group">
+                        <label for="lecturer-name">Nama Dosen (Wajib)</label>
+                        <input type="text" id="lecturer-name" value="${currentLecturer.name || ''}" placeholder="Masukkan nama dosen">
+                    </div>
+                    <div class="form-group">
+                        <label for="lecturer-nidn">NIDN (Opsional)</label>
+                        <input type="text" id="lecturer-nidn" value="${currentLecturer.nidn || ''}" placeholder="Masukkan NIDN">
+                    </div>
+                    <div class="form-group">
+                        <label for="lecturer-phone">Nomor Telepon (Opsional)</label>
+                        <input type="tel" id="lecturer-phone" value="${currentLecturer.phone || ''}" placeholder="Masukkan nomor telepon">
+                    </div>
+                    <div class="form-group">
+                        <label for="lecturer-email">Email (Opsional)</label>
+                        <input type="email" id="lecturer-email" value="${currentLecturer.email || ''}" placeholder="Masukkan email">
+                    </div>`;
+                
+                const saveFunction = () => {
+                    const name = document.getElementById('lecturer-name').value.trim();
+                    if (!name) { alert("Nama dosen wajib diisi!"); return; }
+                    appData.classes[index].lecturer = {
+                        name: name,
+                        nidn: document.getElementById('lecturer-nidn').value.trim(),
+                        phone: document.getElementById('lecturer-phone').value.trim(),
+                        email: document.getElementById('lecturer-email').value.trim(),
+                    };
+                    saveData();
+                    renderClassList();
+                    if (index == activeClassIndex) {
+                        renderAttendancePage();
+                    }
+                    closeModal();
+                };
+                openModal('Informasi Dosen', formHtml, saveFunction);
+            };
+            
+            const handleBackup = () => {
+                if (isVisitorMode) return;
+                if (appData.classes.length === 0) { alert('Tidak ada data untuk dicadangkan.'); return; }
+                const dataStr = JSON.stringify(appData, null, 2);
+                const dataBlob = new Blob([dataStr], {type: "application/json"});
+                const url = URL.createObjectURL(dataBlob);
+                const link = document.createElement('a');
+                const date = new Date();
+                const formattedDate = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+                link.download = `absensi_pro_backup_${formattedDate}.json`;
+                link.href = url;
+                link.click();
+                URL.revokeObjectURL(url);
+            };
+
+            const handleRestore = (event) => {
+                if (isVisitorMode) return;
+                const file = event.target.files[0];
+                if (file) {
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        try {
+                            const restoredData = JSON.parse(e.target.result);
+                            if (restoredData && Array.isArray(restoredData.classes)) {
+                                if (confirm('Ini akan menimpa semua data yang ada. Lanjutkan?')) {
+                                    appData = restoredData;
+                                    saveData();
+                                    renderClassList();
+                                    goBackToClassList();
+                                }
+                            } else { alert('File cadangan tidak valid.'); }
+                        } catch (error) { alert('Gagal membaca file. Pastikan file cadangan tidak rusak.'); }
+                    };
+                    reader.readAsText(file);
+                }
+            };
+
+            const closeReportTypeModal = () => {
+                document.getElementById('report-type-modal-overlay').classList.add('hidden');
+            };
+            
+            const openReportTypeModal = () => {
+                if (isVisitorMode) return;
+                const activeClass = appData.classes[activeClassIndex];
+                if (!activeClass || activeClass.students.length === 0) {
+                    alert('Tidak ada data untuk diekspor.');
+                    return;
+                }
+                document.getElementById('report-type-modal-overlay').classList.remove('hidden');
+            };
+
+            const openExportOptionsModal = (reportType) => {
+                const activeClass = appData.classes[activeClassIndex];
+                const lecturerName = activeClass.lecturer?.name || '';
+                const formHtml = `
+                    <p class="note">Informasi ini opsional dan akan ditambahkan sebagai header di file Excel Anda.</p>
+                    <div class="form-group">
+                        <label for="export-lecturer-name">Nama Dosen</label>
+                        <input type="text" id="export-lecturer-name" value="${lecturerName}">
+                    </div>
+                    <div class="form-group">
+                        <label for="export-course-code">Kode Mata Kuliah</label>
+                        <input type="text" id="export-course-code" placeholder="Contoh: TI101">
+                    </div>
+                    <div class="form-group">
+                        <label for="export-academic-year">Tahun Akademik</label>
+                        <input type="text" id="export-academic-year" placeholder="Contoh: 2024/2025 Ganjil">
+                    </div>`;
+
+                const generateFunction = () => generateReport(reportType);
+                openModal('Opsi Header Excel', formHtml, generateFunction, '<i class="fas fa-download"></i> Buat & Unduh Laporan');
+            };
+
+            const generateReport = (reportType) => {
+                const activeClass = appData.classes[activeClassIndex];
+                const lecturerName = document.getElementById('export-lecturer-name').value.trim();
+                const courseCode = document.getElementById('export-course-code').value.trim();
+                const academicYear = document.getElementById('export-academic-year').value.trim();
+                
+                const headerInfo = [
+                    [`REKAPITULASI PRESENSI MAHASISWA (${reportType.toUpperCase()})`], [],
+                    ["Mata Kuliah", `: ${activeClass.className}`],
+                    ["Dosen Pengampu", `: ${lecturerName}`],
+                    ["Kode MK", `: ${courseCode}`],
+                    ["Tahun Akademik", `: ${academicYear}`], []
+                ];
+
+                let tableHeader, tableBody, fileName;
+                
+                switch(reportType) {
+                    case 'alpha-gt3':
+                    case 'no-alpha':
+                        tableHeader = ["No", "NIM", "Nama", "Jumlah Alpha"];
+                        let filteredStudents = activeClass.students.map(student => {
+                            const attendance = activeClass.attendance[student.id] || [];
+                            const alphaCount = attendance.filter(status => status === 'A').length;
+                            return { ...student, alphaCount };
+                        });
+
+                        if (reportType === 'alpha-gt3') {
+                            filteredStudents = filteredStudents.filter(s => s.alphaCount > 3);
+                            fileName = `Laporan Alpha Diatas 3 - ${activeClass.className}.xlsx`;
+                        } else {
+                            filteredStudents = filteredStudents.filter(s => s.alphaCount === 0);
+                            fileName = `Laporan Tanpa Alpha - ${activeClass.className}.xlsx`;
+                        }
+                        
+                        tableBody = filteredStudents.map((student, index) => [index + 1, student.id, student.name, student.alphaCount]);
+                        break;
+                    
+                    default:
+                        let startWeek = 1, endWeek = 16;
+                        if (reportType === 'pre-uts') endWeek = 7;
+                        if (reportType === 'post-uts') startWeek = 8;
+                        
+                        tableHeader = ["No", "NIM", "Nama"];
+                        for (let i = startWeek; i <= endWeek; i++) tableHeader.push(`P${i}`);
+                        
+                        tableBody = activeClass.students.map((student, index) => {
+                            const row = [index + 1, student.id, student.name];
+                            for (let i = startWeek; i <= endWeek; i++) {
+                                const isHoliday = activeClass.holidays.includes(i);
+                                const status = isHoliday ? 'Libur' : (activeClass.attendance[student.id]?.[i - 1] || '-');
+                                row.push(status);
+                            }
+                            return row;
+                        });
+                        fileName = `Rekap ${reportType.toUpperCase()} - ${activeClass.className}.xlsx`;
+                }
+
+                if (tableBody.length === 0) {
+                    alert('Tidak ada data mahasiswa yang memenuhi kriteria untuk laporan ini.');
+                    closeModal();
+                    return;
+                }
+
+                const finalSheetData = [...headerInfo, tableHeader, ...tableBody];
+                const worksheet = XLSX.utils.aoa_to_sheet(finalSheetData);
+                worksheet['!cols'] = [ {wch: 5}, {wch: 15}, {wch: 30} ];
+                const workbook = XLSX.utils.book_new();
+                XLSX.utils.book_append_sheet(workbook, worksheet, "Rekap Absensi");
+                XLSX.writeFile(workbook, fileName);
+                closeModal();
+            };
+
+            function setupInitialListeners() {
+                document.getElementById('add-class-btn').addEventListener('click', addNewClass);
+                document.getElementById('backup-btn').addEventListener('click', handleBackup);
+                document.getElementById('restore-input').addEventListener('change', handleRestore);
+                document.getElementById('back-to-classes-btn').addEventListener('click', goBackToClassList);
+                document.getElementById('edit-list-btn').addEventListener('click', resetStudentList);
+                document.getElementById('export-excel').addEventListener('click', openReportTypeModal);
+                document.getElementById('report-type-modal-content').addEventListener('click', (e) => {
+                    const button = e.target.closest('button');
+                    if (!button) return;
+                    if (button.id === 'report-type-cancel-btn') {
+                        closeReportTypeModal();
+                        return;
+                    }
+                    const reportType = button.dataset.reportType;
+                    if (reportType) {
+                        closeReportTypeModal();
+                        openExportOptionsModal(reportType);
+                    }
+                });
+                document.getElementById('search-input').addEventListener('input', handleSearch);
+                document.getElementById('attendance-cards-container').addEventListener('click', (e) => {
+                    const dot = e.target.closest('.attendance-dot');
+                    const editBtn = e.target.closest('.edit-student-btn');
+                    if (dot && !dot.classList.contains('holiday')) {
+                        toggleAttendance(dot.dataset.studentId, parseInt(dot.dataset.week));
+                    } else if (editBtn) {
+                        handleEditStudent(editBtn.dataset.id);
+                    }
+                });
+                document.getElementById('mark-all-present-btn').addEventListener('click', () => {
+                    if (isVisitorMode) return;
+                    const week = parseInt(document.getElementById('week-selector').value);
+                    const activeClass = appData.classes[activeClassIndex];
+                    if (!week || !activeClass) return;
+                    if (activeClass.holidays.includes(week)) return alert(`Pertemuan ${week} libur.`);
+                    activeClass.students.forEach(student => { (activeClass.attendance[student.id] || [])[week - 1] = 'H'; });
+                    saveData();
+                    renderAttendanceCards();
+                    updateSmartDashboard();
+                });
+                document.getElementById('mark-as-holiday-btn').addEventListener('click', () => {
+                    if (isVisitorMode) return;
+                    const week = parseInt(document.getElementById('week-selector').value);
+                    const activeClass = appData.classes[activeClassIndex];
+                    if (!week || !activeClass) return;
+                    const holidayIndex = activeClass.holidays.indexOf(week);
+                    if (holidayIndex > -1) {
+                        activeClass.holidays.splice(holidayIndex, 1);
+                    } else {
+                        activeClass.holidays.push(week);
+                    }
+                    saveData();
+                    renderAttendanceCards();
+                    updateSmartDashboard();
+                });
+                document.getElementById('reset-attendance-btn').addEventListener('click', () => {
+                    if (isVisitorMode) return;
+                    const week = parseInt(document.getElementById('week-selector').value);
+                    const activeClass = appData.classes[activeClassIndex];
+                    if (!week || !activeClass) return;
+                    if (confirm(`Yakin ingin mereset semua absensi untuk Pertemuan ${week}? Aksi ini tidak dapat dibatalkan.`)) {
+                        const holidayIndex = activeClass.holidays.indexOf(week);
+                        if (holidayIndex > -1) {
+                            activeClass.holidays.splice(holidayIndex, 1);
+                        }
+                        activeClass.students.forEach(student => {
+                            if (activeClass.attendance[student.id]) {
+                                activeClass.attendance[student.id][week - 1] = null;
+                            }
+                        });
+                        saveData();
+                        renderAttendanceCards();
+                        updateSmartDashboard();
+                    }
+                });
+                document.getElementById('week-selector').addEventListener('change', (e) => {
+                    localStorage.setItem(`currentWeek_${activeClassIndex}`, e.target.value);
+                    renderAttendanceCards();
+                });
+                document.getElementById('modal-cancel-btn').addEventListener('click', closeModal);
+                
+                // --- LISTENER BARU UNTUK TOMBOL SHARE ---
+                document.getElementById('share-class-btn').addEventListener('click', () => {
+                    if (isVisitorMode) return;
+                    const baseUrl = window.location.href.split('?')[0].split('#')[0];
+                    const visitorUrl = `${baseUrl}?view=visitor#class${activeClassIndex}`;
+                    
+                    navigator.clipboard.writeText(visitorUrl).then(() => {
+                        alert(`Link untuk Visitor telah disalin ke clipboard!\n\n${visitorUrl}`);
+                    }, () => {
+                        alert('Gagal menyalin link. Silakan salin secara manual.');
+                    });
+                });
+            }
+            
+            const initializeApp = () => {
+                loadData();
+                setupInitialListeners();
+                renderClassList();
+                switchView('class-selection-view');
+                if (window.location.hash && window.location.hash.startsWith('#class')) {
+                    const classIndex = parseInt(window.location.hash.replace('#class', ''), 10);
+                    if (!isNaN(classIndex) && classIndex >= 0 && classIndex < appData.classes.length) {
+                        selectClass(classIndex);
+                    }
+                }
+            };
+            initializeApp();
+        });
+    </script>
+</body>
+</html>
